@@ -16,7 +16,7 @@ if (readCache) {
 }
 ####################################################################
 queryMongo <- function(mg1, startDate, endDate, searchTerms) {
-    print(searchTerms)
+    #print(searchTerms)
     if (!readCache) {
         # we want to filter query by date range and boolean or of search terms
         yesterday <- format(Sys.time() - 86400,
