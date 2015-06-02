@@ -1,6 +1,5 @@
 # helper.R
 # high level functions that are used in server.R
-
 ####################################################################
 # what i want to do is to get the search info, compiled from
 #   Date Range, search terms 
@@ -12,6 +11,9 @@
 # doc.scores <- create.doc.scores(mongoResults)
 #
 # Then we need to post process - sort, plot, map, etc.
+####################################################################
+# countries is a global df that has country names vs. lat,long
+countries <- read.csv("countryLatLong.csv",stringsAsFactors=FALSE)
 ####################################################################
 doit <- function(input) {
     searchTerms <- input$searchTerms
@@ -27,15 +29,25 @@ doit <- function(input) {
     # clean up authors - specific to the db schema
     authors <- authorCleanup(mongoResults$Authors)
     
+    countries1 <- tolower(countries[[1]])
+    countryByArticle <- character(length(keywords.list))
+    countryMatches <- lapply(countries1, function(x) {
+        countryByArticle[grep(x,keywords.list)] <<- x; grep(x,keywords.list)
+        })
+    
     tfidf.matrix <- create.tfidf.from.doclist(keywords.list)
-    doc.scores <- create.doc.scores.from.tfidf.and.query(tfidf.matrix, searchTerms)
+    doc.scores <- create.doc.scores.from.tfidf.and.query(tfidf.matrix, 
+                                                         searchTerms)
     results.df <- data.frame(score = t(doc.scores)/max(doc.scores), 
                              mongoResults$Heading,
                              mongoResults$PublishDate,
                              mongoResults$OriginatingFeed,
                              authors,
+                             countryByArticle,
                              text = unlist(keywords.list))
-    colnames(results.df) <- c("score","heading","date","feed","authors","keywords")
-    results.df <- results.df[order(results.df$score, decreasing = TRUE), ]
+    colnames(results.df) <- c("score","heading","date","feed","authors","country","keywords")
+#     colnames(results.df) <- c("score","heading","date","feed","authors","keywords")
+
+        results.df <- results.df[order(results.df$score, decreasing = TRUE), ]
     return(results.df)
 }

@@ -1,4 +1,4 @@
-# mongoquery.R will do utilities for special parsing of results from Mongo
+# mongoQuery.R will do utilities for special parsing of results from Mongo
 #
 # these are globals for the entire app... not session or anything.
 #  Notice that it is executed inline, not a function.
